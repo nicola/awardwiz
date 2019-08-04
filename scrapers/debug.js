@@ -3,16 +3,16 @@
 const index = require("./index")
 const process = require("process")
 
-const main = async() => {
+const main = async () => {
   console.log("Starting")
   const result = await index.debugEntry({
-    scraper: "british",
+    scraper: "avios",
     params: {
-      origin: "LAX",
-      destination: "NRT",
-      date: "2019-07-03",
-      username: process.env.BRITISH_USERNAME || "",
-      password: process.env.BRITISH_PASSWORD || "",
+      origin: "DUB",
+      destination: "LHR",
+      date: "2019-09-20",
+      username: process.env.AVIOS_USERNAME || "",
+      password: process.env.AVIOS_PASSWORD || "",
       originNearby: "true",
       destinationNearby: "true"
     }

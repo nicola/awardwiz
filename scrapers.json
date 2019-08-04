@@ -24,6 +24,14 @@
     ],
     "extraParams": {"username": {}, "password": {}}
   },
+  "avios": {
+  "searchesAirlines": [
+    "oneworld",
+    "AA", "BA", "CX", "AY", "IB", "JL", "LA", "MH", "QF", "QR", "RJ", "S7", "UL",
+    "EI", "AL", "VY"
+  ],
+  "extraParams": {"username": {}, "password": {}}
+},
   "chase": {
     "searchesAllAirlines": true,
     "neverReturnsSaverFares": true
