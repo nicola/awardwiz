@@ -29,6 +29,7 @@ exports.scraperMain = async (page, input) => {
     console.log('Reload again original page')
     // await page.type('#fly-from', input.origin)
     // await page.type('#fly-to', input.destination)
+    await page.waitForSelector('#departureLocationRef')
     await page.$eval('#departureLocationRef', (el, input) => el.value = input.origin, input);
     await page.$eval('#destinationLocationRef', (el, input) => el.value = input.destination, input);
     const d = input.date
