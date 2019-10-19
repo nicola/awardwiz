@@ -7,7 +7,7 @@ import AWSProvider from "./cloud-providers/aws-provider.js"
 export default class AwardWiz {
   constructor() {
     // @ts-ignore because the type checker isn't very good at async constructors
-    return (async() => {
+    return (async () => {
       /** @type {AwardWizConfig} */
       this.config = {
         awsAccessKey: "", awsSecretAccessKey: "", awsRegionZone: "us-west-1a", awsLambdaRoleArn: "",
@@ -45,14 +45,14 @@ export default class AwardWiz {
       })
       this.cloud.initOnPage()
 
-      this.gridView = new AwardWizGrid(/** @type {HTMLDivElement} */ (document.querySelector("#resultsGrid")), AwardWiz.onRowClicked)
+      this.gridView = new AwardWizGrid(/** @type {HTMLDivElement} */(document.querySelector("#resultsGrid")), AwardWiz.onRowClicked)
 
       /** @type {Array<SearchResultRow>} */
       this.gridFlights = []    // the data more aggregated for the grid view
       /** @type {Object<string, Array<SearchResult>>} */
       this.scraperResults = {};    // the raw result data from the scrapers
 
-      (async() => {
+      (async () => {
         const commits = await fetch("https://api.github.com/repos/lg/awardwiz/commits").then(result => result.json())
         let commitsHTML = ""
         for (let curCommitIndex = 0; curCommitIndex < 5; curCommitIndex += 1) {
@@ -88,7 +88,7 @@ export default class AwardWiz {
     /** @type {ScraperParams} */
     const scraperParams = {
       scraper: scraperName,
-      params: {...searchQuery}
+      params: { ...searchQuery }
     }
 
     // Some scrapers require a proxy be used, set it if necessary
@@ -115,7 +115,7 @@ export default class AwardWiz {
       console.log(`Scraper ${scraperIdentifier} returned ${result.scraperResult.searchResults.length} result${result.scraperResult.searchResults.length === 1 ? "" : "s"}.`)
     } else {
       console.log(`Scraper ${scraperIdentifier} errored.`)
-      result.scraperResult = {searchResults: []}
+      result.scraperResult = { searchResults: [] }
     }
 
     // Individual status per scraper
@@ -123,7 +123,7 @@ export default class AwardWiz {
     statusDiv.innerHTML = `${scraperIdentifier} -
       ${statusLine} (${((new Date()).valueOf() - startTime) / 1000}s) -
       <a href="data:image/jpeg;base64,${result.screenshot}" target="_blank">show screenshot</a>
-      <a href="data:application/json;base64,${btoa(JSON.stringify(Object.assign(result, {screenshot: "[FILTERED OUT]"}), null, 2))}" target="_blank">show result</a>
+      <a href="data:application/json;base64,${btoa(JSON.stringify(Object.assign(result, { screenshot: "[FILTERED OUT]" }), null, 2))}" target="_blank">show result</a>
       <a href="${result.awsLogURL}" target="_blank">show cloudwatch log</a>
       <a id='retry' href="javascript:void(0)">retry</a>
       (right click to open)`
@@ -189,7 +189,7 @@ export default class AwardWiz {
       if (!flightAlreadyInGrid) {
         /** @type {SearchResultRow} */
         const newRow = {
-          scrapersUsed: {[scraperName]: newFlight},
+          scrapersUsed: { [scraperName]: newFlight },
           ...JSON.parse(JSON.stringify(newFlight))    // copy the object
         }
 
@@ -231,7 +231,7 @@ export default class AwardWiz {
     }
 
     console.log("Searching ita to find flights and airlines...")
-    const itaResults = await this.runScraperAndAddToGrid("ita", {...query, originNearby: this.config.originNearby.toString(), destinationNearby: this.config.destinationNearby.toString()}, statusElement)
+    const itaResults = await this.runScraperAndAddToGrid("ita", { ...query, originNearby: this.config.originNearby.toString(), destinationNearby: this.config.destinationNearby.toString() }, statusElement)
     this.gridView.grid.api.hideOverlay()
 
     // Convert the airline codes to all the scrapers which support those airlines and do
@@ -245,8 +245,8 @@ export default class AwardWiz {
 
     // Some airlines will always get searched depending on if we're considering airports they serve
     // const searchingAirports = [this.config.origin, this.config.destination]
-    const origins = [this.config.origin, ...((itaResults.scraperResult || {nearbyOriginAirports: []}).nearbyOriginAirports || [])]
-    const destinations = [this.config.destination, ...((itaResults.scraperResult || {nearbyDestinationAirports: []}).nearbyDestinationAirports || [])]
+    const origins = [this.config.origin, ...(({ nearbyOriginAirports: [] }).nearbyOriginAirports || [])]
+    const destinations = [this.config.destination, ...(({ nearbyDestinationAirports: [] }).nearbyDestinationAirports || [])]
     for (const checkScraperName of Object.keys(this.config.scrapers)) {
       if (this.config.scrapers[checkScraperName].alwaysForAirports) {
         /** @type {Array<string>} */
@@ -259,9 +259,10 @@ export default class AwardWiz {
           for (const destination of matchedDestinations)
             scrapersAndOrigDest.push(`${checkScraperName}|${origin}|${destination}`)
       }
+      this.runScraperAndAddToGrid(checkScraperName, this.config, statusElement)
     }
 
-    await this.runSearch(scrapersAndOrigDest, statusElement)
+    // await this.runSearch(scrapersAndOrigDest, statusElement)
 
     console.log("Completed search.")
     this.gridView.grid.api.hideOverlay()
@@ -293,7 +294,7 @@ export default class AwardWiz {
         this.startNewSearch(`${route.region1}→${route.region2}`, statusElement)
       } else if (regionSearch === `route${index}-ba`) {
         searchRoutes = route.flights.map(curRoute => {
-          return {airline: curRoute.airline, airport1: curRoute.airport2, airport2: curRoute.airport1}
+          return { airline: curRoute.airline, airport1: curRoute.airport2, airport2: curRoute.airport1 }
         })
         this.startNewSearch(`${route.region2}→${route.region1}`, statusElement)
       }
@@ -322,7 +323,7 @@ export default class AwardWiz {
       console.log("Starting search...")
       await Promise.all(uniqueScrapersAndOrigDest.map(scaperAndOrigDest => {
         const [scraperName, origin, destination] = scaperAndOrigDest.split("|")
-        const properOrigDestQuery = {origin, destination, date: this.config.date}
+        const properOrigDestQuery = { origin, destination, date: this.config.date }
         return this.runScraperAndAddToGrid(scraperName, properOrigDestQuery, statusElement)
       }))
     }

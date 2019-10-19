@@ -3,6 +3,8 @@
  * @param {SearchQuery} input
  */
 exports.scraperMain = async (page, input) => {
+  if (input.origin == "FCO") input.origin = "ROM"
+  if (input.destination == "FCO") input.destination = "ROM"
   // The strategy is to go to the search URL, force the log-in and go to the
   // search URL again.
   // The website is a bit tricky, for each flight listing it has two elements:
@@ -23,6 +25,9 @@ exports.scraperMain = async (page, input) => {
       page.waitForSelector('body.IPEVFA').then(() => 1)
     ])
   } catch (err) {   // necessary to deal with a puppeteer bug where closing the browser causes a race condition
+    const body = await page.$('body')
+    const bodyClass = await page.evaluate(el => el.className, body)
+    console.log(`failed with: ${bodyClass}`)
     throw err
   }
 

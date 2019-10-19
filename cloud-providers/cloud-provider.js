@@ -62,7 +62,7 @@ export class CloudProvider {
 
   async prep() {
     console.log("Prepping package...")
-    const {filesHash, zipFile} = await this.prepPackage()
+    const { filesHash, zipFile } = await this.prepPackage()
 
     console.log("Getting if cloud has up to date function...")
     const existingFunctionHash = await this.stepGetExistingFunctionHash()
@@ -80,8 +80,8 @@ export class CloudProvider {
 
     if (functionUpdated) {
       console.log("Waiting for function to be live...")
-      await this.waitFor(5000, 12 * 5, async() => {         // 5 mins timeout
-        const out = await this.run({hashCheck: true})
+      await this.waitFor(5000, 12 * 5, async () => {         // 5 mins timeout
+        const out = await this.run({ hashCheck: true })
         return out.hashCheck === filesHash
       })
     }
@@ -109,9 +109,9 @@ export class CloudProvider {
       unixPermissions: 0o120755
     })
 
-    const zipFile = await zip.generateAsync({type: "arraybuffer", platform: "UNIX"})  // platform UNIX to allow symlinks
+    const zipFile = await zip.generateAsync({ type: "arraybuffer", platform: "UNIX" })  // platform UNIX to allow symlinks
 
-    return {filesHash, zipFile}
+    return { filesHash, zipFile }
   }
 
   /**

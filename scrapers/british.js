@@ -9,12 +9,13 @@
  * @param {import("puppeteer").Page} page
  * @param {SearchQuery} input
  */
-exports.scraperMain = async(page, input) => {
+exports.scraperMain = async (page, input) => {
   /** @type {SearchResult[]} */
   const flights = []
 
+
   // We need to search twice due to how the results are given back for economy vs first
-  for (const searchMode of ["economy", "first"]) {
+  for (const searchMode of ["economy"]) {
     console.log("Going to search page...")
     await page.goto("https://www.britishairways.com/travel/redeem/execclub/_gf/en_us")
 
@@ -50,8 +51,8 @@ exports.scraperMain = async(page, input) => {
     result = 0
     try {     // eslint-disable-line no-useless-catch
       result = await Promise.race([
-        page.waitForSelector("#sector_1", {timeout: 60000}).then(() => 0),
-        page.waitForSelector("#stopOverForm", {timeout: 60000}).then(() => 1),
+        page.waitForSelector("#sector_1", { timeout: 60000 }).then(() => 0),
+        page.waitForSelector("#stopOverForm", { timeout: 60000 }).then(() => 1),
         page.waitForSelector("#captcha_form").then(() => 2)
       ])
     } catch (err) {   // necessary to deal with a puppeteer bug where closing the browser causes a race condition
@@ -61,7 +62,7 @@ exports.scraperMain = async(page, input) => {
     if (result === 1) {
       console.log("Stopover screen received, clicking to skip...")
       await page.click("#continueTopPod")
-      await page.waitForSelector("#sector_1", {timeout: 60000})
+      await page.waitForSelector("#sector_1", { timeout: 60000 })
     } else if (result === 2) {
       throw new Error("Captcha")
     }
@@ -69,7 +70,7 @@ exports.scraperMain = async(page, input) => {
     /** @param {import("puppeteer").ElementHandle<Element> | import("puppeteer").Page} parentElement
      * @param {string} selector
      * @returns {Promise<string>} */
-    const innerText = async(parentElement, selector) => {
+    const innerText = async (parentElement, selector) => {
       const stopsEl = await parentElement.$(selector)
       return page.evaluate(pageEl => pageEl.innerText, stopsEl)
     }
@@ -92,9 +93,9 @@ exports.scraperMain = async(page, input) => {
         duration: `${(await innerText(row, "td:nth-of-type(3)")).substr(0, 2)}h ${(await innerText(row, "td:nth-of-type(3)")).substr(2, 2)}m`,
         aircraft: null,     // it's possible to get, but via a navigation
         costs: {
-          economy: {miles: null, cash: null, isSaverFare: null},
-          business: {miles: null, cash: null, isSaverFare: null},
-          first: {miles: null, cash: null, isSaverFare: null}
+          economy: { miles: null, cash: null, isSaverFare: null },
+          business: { miles: null, cash: null, isSaverFare: null },
+          first: { miles: null, cash: null, isSaverFare: null }
         }
       }
 
@@ -113,7 +114,7 @@ exports.scraperMain = async(page, input) => {
         await page.waitFor(1000)  // not sure why this is necessary
 
         const textParts = text.split(" Avios + $")
-        const cashMiles = {miles: parseInt(textParts[0], 10), cash: parseFloat(textParts[1]), isSaverFare: true}
+        const cashMiles = { miles: parseInt(textParts[0], 10), cash: parseFloat(textParts[1]), isSaverFare: true }
 
         const cabinName = await innerText(cabinCol, ".travel-class")
         if (cabinName === "Economy" || cabinName === "Premium Economy") {
@@ -146,5 +147,5 @@ exports.scraperMain = async(page, input) => {
     }
   }
 
-  return {searchResults: flights}
+  return { searchResults: flights }
 }

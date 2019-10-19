@@ -25,7 +25,7 @@ exports.scraperMain = async (page, input) => {
     console.log('Done logging in, search for flights now')
     await page.waitFor(1000)
     await page.goto(`https://www.avios.com/us/en/my-avios/flight-search`, { waitUntil: 'networkidle0' })
-    await page.waitFor(100)
+    await page.waitFor(1000)
     console.log('Reload again original page')
     // await page.type('#fly-from', input.origin)
     // await page.type('#fly-to', input.destination)
@@ -48,7 +48,9 @@ exports.scraperMain = async (page, input) => {
         return page.evaluate(pageEl => pageEl.innerText, stopsEl)
     }
 
+    await page.waitFor(1000)
     await page.waitForSelector("#sectionOutbound")
+    await page.waitFor(1000)
     // Part 1: Getting flight number
     console.log('Parsing to get flight details...')
     const flights = []
@@ -70,10 +72,15 @@ exports.scraperMain = async (page, input) => {
         const origin = await innerText(row, '.dep a[role="tooltip"]')
         const destination = await innerText(row, '.arr a[role="tooltip"]')
         const airline = await page.evaluate(el => el.alt, airLogo)
-        const flightNo = (await innerText(row, '.air span a')).split('-')[0].trim()
+
+        const flightNoInnerText = await innerText(row, '.air span a')
+        const flightNo = flightNoInnerText.substr(0, 7)
+        const depTime = await innerText(row, '.dep em')
+        const arrTime = await innerText(row, '.arr em')
+        // TODO: assuming flights arrive the same day
         const flight = {
-            departureDateTime: null,
-            arrivalDateTime: null,
+            departureDateTime: `${input.date} ${depTime}`,
+            arrivalDateTime: `${input.date} ${arrTime}`,
             origin: origin,
             destination: destination,
             airline: airline,
@@ -92,7 +99,7 @@ exports.scraperMain = async (page, input) => {
             const priceNotAvailable = await page.evaluate(el => el.className.includes('no-avail'), await cabin)
             if (!priceNotAvailable) {
                 await cabin.click()
-                await page.waitFor(500)
+                await page.waitFor(1000)
                 const pricePane = await page.$('#sub_total_pane')
                 const milesRaw = (await innerText(pricePane, '.price'))
                 const miles = parseInt(
@@ -118,7 +125,7 @@ exports.scraperMain = async (page, input) => {
 
                 if (!flight.costs[cabinCode].miles || flight.costs[cabinCode].miles > miles) {
                     flight.costs[cabinCode].miles = miles
-                    flight.costs[cabinCode].price = price
+                    flight.costs[cabinCode].cash = price
                 }
             }
             cabinId++

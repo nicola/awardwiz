@@ -8,7 +8,7 @@
  * @param {import("puppeteer").Page} page
  * @param {SearchQuery} input
  */
-exports.scraperMain = async(page, input) => {
+exports.scraperMain = async (page, input) => {
   console.log("Going to homepage...")
   await page.goto("https://matrix.itasoftware.com")
 
@@ -38,7 +38,7 @@ exports.scraperMain = async(page, input) => {
     await page.keyboard.type(airport)    // dispatches ajax autocomplete queries per letter
 
     console.log("  Waiting for autocomplete lookup...")
-    await page.waitForResponse(response => (response.url() === "https://matrix.itasoftware.com/geosearch") && JSON.parse(JSON.parse(response.request().postData() || "").params)["1"] === airport, {timeout: 90000})
+    await page.waitForResponse(response => (response.url() === "https://matrix.itasoftware.com/geosearch") && JSON.parse(JSON.parse(response.request().postData() || "").params)["1"] === airport, { timeout: 90000 })
     await page.waitFor(1000)    // results (if any) take at most a second to be processed
 
     console.log("  Looking for autocomplete result...")
@@ -50,17 +50,17 @@ exports.scraperMain = async(page, input) => {
 
     if ((curField === "origin" && input.originNearby === "true") || (curField === "destination" && input.destinationNearby === "true")) {
       console.log("  Clicking nearby...")
-      const nearbyLink = await page.waitForXPath(`(//a[text()='Nearby' and not(ancestor::div[contains(@style,'display: none')])])[${oneIndex}]`, {timeout: 90000})
+      const nearbyLink = await page.waitForXPath(`(//a[text()='Nearby' and not(ancestor::div[contains(@style,'display: none')])])[${oneIndex}]`, { timeout: 90000 })
       await nearbyLink.click()
 
       console.log("  Waiting for results...")
-      await page.waitForResponse(response => (response.url() === "https://matrix.itasoftware.com/geosearch") && JSON.parse(response.request().postData() || "").method === "findAirportsNearCoords", {timeout: 90000})
+      await page.waitForResponse(response => (response.url() === "https://matrix.itasoftware.com/geosearch") && JSON.parse(response.request().postData() || "").method === "findAirportsNearCoords", { timeout: 90000 })
 
       console.log("  Switching to 50mi...")
       await page.select(".popupContent select", "50")
 
       console.log("  Waiting for results again...")
-      await page.waitForResponse(response => (response.url() === "https://matrix.itasoftware.com/geosearch") && JSON.parse(response.request().postData() || "").method === "findAirportsNearCoords", {timeout: 90000})
+      await page.waitForResponse(response => (response.url() === "https://matrix.itasoftware.com/geosearch") && JSON.parse(response.request().postData() || "").method === "findAirportsNearCoords", { timeout: 90000 })
 
       console.log("  Selecting all...")
       await (await page.waitForXPath("//label[.='Select all']/../input")).click()
@@ -86,7 +86,7 @@ exports.scraperMain = async(page, input) => {
   await currencyElement.focus()
   await page.keyboard.type("USD")
   const currencySuggestXPath = "//td[contains(text(), '(USD)')]"
-  await (await page.waitForXPath(currencySuggestXPath, {timeout: 90000, visible: true})).click()
+  // await (await page.waitForXPath(currencySuggestXPath, {timeout: 90000, visible: true})).click()
 
   console.log("Setting date...")
   await (await page.$x("(//div[contains(text(), 'Departure Date')]/..)[1]/div[2]/input"))[0].focus()
@@ -99,13 +99,13 @@ exports.scraperMain = async(page, input) => {
   console.log("Starting search...")
   await Promise.all([
     page.click("button"),
-    page.waitForResponse("https://matrix.itasoftware.com/search", {timeout: 0})
+    page.waitForResponse("https://matrix.itasoftware.com/search", { timeout: 0 })
   ])
 
   // We use time-bars mode because it gives us more info about the flights
   console.log("Switching to time-bars mode")
   await page.click("a[title='View color time bars'] span")
-  await page.waitForResponse("https://matrix.itasoftware.com/search", {timeout: 0})
+  await page.waitForResponse("https://matrix.itasoftware.com/search", { timeout: 0 })
   await page.waitFor(100)
 
   // If there are multiple pages, request everything
@@ -114,7 +114,7 @@ exports.scraperMain = async(page, input) => {
     console.log("Loading the 'All' page...")
     await Promise.all([
       allLink[0].click(),
-      page.waitForXPath("//span[text()='All']", {timeout: 0})
+      page.waitForXPath("//span[text()='All']", { timeout: 0 })
     ])
   }
 
@@ -170,7 +170,7 @@ exports.scraperMain = async(page, input) => {
   }
 
   console.log("Done.")
-  return {searchResults: results, warnings, nearbyOriginAirports: nearbyOriginAirports.split(", "), nearbyDestinationAirports: nearbyDestinationAirports.split(", ")}
+  return { searchResults: results, warnings, nearbyOriginAirports: nearbyOriginAirports.split(", "), nearbyDestinationAirports: nearbyDestinationAirports.split(", ") }
 }
 
 /** after you've already hovered over the bar, retrieve the details from the flight
@@ -181,7 +181,7 @@ exports.scraperMain = async(page, input) => {
  * @param {SearchResult[]} results
  * @returns {Promise<SearchResult | null>}
  */
-const getFlightFromRow = async(page, input, rowElement, detailsElement, results) => {
+const getFlightFromRow = async (page, input, rowElement, detailsElement, results) => {
   /** @type {SearchResult} */
   const result = {
     departureDateTime: "",
@@ -193,9 +193,9 @@ const getFlightFromRow = async(page, input, rowElement, detailsElement, results)
     airline: (await xPathInnerText(page, ".//div[1]", detailsElement, "airline name and flight number")).split(" flight ")[0],
     flightNo: "??????",
     costs: {
-      economy: {miles: null, cash: parseInt((await xPathInnerText(page, ".//div[1]/button[1]/span[2]", rowElement, "economy cash amount")).replace("$", ""), 10), isSaverFare: false},
-      business: {miles: null, cash: null, isSaverFare: false},
-      first: {miles: null, cash: null, isSaverFare: false}
+      economy: { miles: null, cash: parseInt((await xPathInnerText(page, ".//div[1]/button[1]/span[2]", rowElement, "economy cash amount")).replace("$", ""), 10), isSaverFare: false },
+      business: { miles: null, cash: null, isSaverFare: false },
+      first: { miles: null, cash: null, isSaverFare: false }
     }
   }
 
@@ -265,7 +265,7 @@ const convert12HourTo24Hour = twelveHour => {
  * @param {import("puppeteer").ElementHandle | null} contextElement
  * @param {string} description when XPath isn't found, throw this description
  * @returns {Promise<string>} */
-const xPathInnerText = async(page, xPath, contextElement, description) => {
+const xPathInnerText = async (page, xPath, contextElement, description) => {
   if (contextElement && !xPath.startsWith("."))
     throw new Error("When using a context XPath element, the path must start with a '.'")
   const [foundElement] = (await (contextElement || page).$x(xPath))
